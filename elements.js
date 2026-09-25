@@ -167,7 +167,8 @@ function* combinationIterator(text) {
   for (let i = text.length - 1; i >= 0; i--) {
     const candidates = [];
     if (!/[A-Za-z]/.test(text[i])) {
-      candidates.push({ size: 1, token: { raw: text[i], literal: true }, ...costs[i + 1] });
+      const size = /[\uD800-\uDBFF]/.test(text[i]) && /[\uDC00-\uDFFF]/.test(text[i + 1] || '') ? 2 : 1;
+      candidates.push({ size, token: { raw: text.slice(i, i + size), literal: true }, ...costs[i + size] });
     } else {
       for (const size of [2, 1]) {
         const raw = text.slice(i, i + size);

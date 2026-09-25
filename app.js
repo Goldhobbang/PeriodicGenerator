@@ -2,6 +2,7 @@ const input = document.querySelector('#sentence');
 const cards = document.querySelector('#cards');
 const result = document.querySelector('#result');
 const copy = document.querySelector('#copy');
+const copyImage = document.querySelector('#copy-image');
 const separator = document.querySelector('#separator');
 const more = document.querySelector('#more');
 const combinationStatus = document.querySelector('#combination-status');
@@ -13,6 +14,7 @@ let selectedIndex = 0;
 let customSeparator = false;
 const language = () => document.querySelector('input[name="language"]:checked').value;
 const selectedText = () => formatCombination(combinations[selectedIndex] || [], language(), separator.value);
+const detailFlags = () => Object.fromEntries([...document.querySelectorAll('input[name="card-detail"]')].map(input => [input.value, input.checked]));
 
 function updateOutput() {
   clearTimeout(copyTimer);
@@ -21,6 +23,7 @@ function updateOutput() {
   result.textContent = selectedText() || '입력한 문장이 여기에 나타나요.';
   result.classList.toggle('empty', !input.value);
   copy.disabled = !input.value.trim();
+  copyImage.disabled = !input.value.trim();
   const tokens = combinations[selectedIndex] || [];
   const count = tokens.filter(token => token.element).length;
   const missing = tokens.filter(token => !token.element && !token.literal).length;
@@ -33,25 +36,35 @@ function updateOutput() {
 
 function makeTile(token) {
   const tile = document.createElement('span');
-  const main = document.createElement('strong');
-  const subtitle = document.createElement('span');
+  const flags = detailFlags();
   if (token.element) {
     const element = token.element;
     tile.className = `element tone-${element.number % 3}`;
     tile.title = `${element.symbol} · ${element.name} · 원자 번호 ${element.number}`;
-    const number = document.createElement('small');
-    number.textContent = element.number;
-    main.textContent = language() === 'ko' ? element.name : element.symbol;
-    main.className = language() === 'ko' ? 'korean' : '';
-    subtitle.textContent = language() === 'ko' ? element.symbol : element.name;
-    tile.append(number);
+    tile.setAttribute('aria-label', tile.title);
+    if (flags.number) {
+      const number = document.createElement('small');
+      number.textContent = element.number;
+      tile.append(number);
+    }
+    if (flags.symbol) {
+      const symbol = document.createElement('strong');
+      symbol.textContent = element.symbol;
+      tile.append(symbol);
+    }
+    if (flags.name) {
+      const name = document.createElement('span');
+      name.textContent = element.name;
+      tile.append(name);
+    }
   } else {
     tile.className = 'element unmatched';
+    const main = document.createElement('strong');
     main.textContent = token.raw;
-    subtitle.textContent = '변환 불가';
+    tile.append(main);
     tile.title = `${token.raw}: 대응하는 원소 기호가 없어요`;
+    tile.setAttribute('aria-label', tile.title);
   }
-  tile.append(main, subtitle);
   return tile;
 }
 
@@ -86,7 +99,7 @@ function appendCombination(tokens, index) {
   heading.append(title, selection);
   const tiles = document.createElement('span');
   tiles.className = 'combination-tiles';
-  for (const token of tokens) tiles.append(token.literal ? document.createTextNode(token.raw) : makeTile(token));
+  for (const token of tokens) tiles.append(token.literal && /\s/.test(token.raw) ? document.createTextNode(token.raw) : makeTile(token));
   button.append(heading, tiles);
   button.addEventListener('click', () => selectCombination(index));
   button.addEventListener('keydown', event => {
@@ -123,6 +136,14 @@ function resetCombinations() {
   }
 }
 input.addEventListener('input', resetCombinations);
+document.querySelectorAll('input[name="card-detail"]').forEach(checkbox => checkbox.addEventListener('change', () => {
+  const scrollTop = cards.scrollTop;
+  cards.replaceChildren();
+  combinations.forEach(appendCombination);
+  if (!combinations.length) resetCombinations();
+  else selectCombination(selectedIndex);
+  cards.scrollTop = scrollTop;
+}));
 separator.addEventListener('input', () => { customSeparator = true; updateOutput(); });
 document.querySelectorAll('input[name="language"]').forEach(radio => radio.addEventListener('change', () => {
   if (!customSeparator) separator.value = ' ';
@@ -169,5 +190,25 @@ copy.addEventListener('click', async () => {
     result.focus();
   }
   copyTimer = setTimeout(() => { copy.querySelector('span').textContent = '복사'; }, 2000);
+});
+copyImage.addEventListener('click', async () => {
+  const status = document.querySelector('#image-status');
+  const label = copyImage.textContent;
+  copyImage.disabled = true;
+  status.textContent = '카드 이미지를 만들고 있어요.';
+  try {
+    const canvas = renderCombinationImage(combinations[selectedIndex] || [], detailFlags());
+    const png = new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('PNG를 만들지 못했습니다.')), 'image/png'));
+    if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined') throw new Error('이 브라우저에서는 이미지 복사를 지원하지 않습니다.');
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]);
+    copyImage.textContent = '사진 복사 완료!';
+    status.textContent = '선택한 조합의 카드 이미지를 클립보드에 복사했습니다.';
+  } catch (error) {
+    copyImage.textContent = '사진 복사';
+    status.textContent = `${error.message} 브라우저의 클립보드 권한을 확인해 주세요.`;
+  } finally {
+    copyImage.disabled = !input.value.trim();
+    setTimeout(() => { copyImage.textContent = label; }, 2000);
+  }
 });
 resetCombinations();

@@ -20,3 +20,15 @@
 .result-controls .copy-button{position:static;transform:none;white-space:nowrap}
 #result{height:72px;max-height:72px;overflow:auto;margin-top:10px;overscroll-behavior:contain}
 @media(max-width:540px){.cards{height:260px;min-height:260px;max-height:260px}.combination{padding:9px}.result-toolbar{flex-wrap:wrap}.result-controls{margin-left:auto;gap:8px}.result-box{padding:12px}.combination-toolbar{font-size:9px}#more{font-size:10px}#separator{width:75px}}
+/* Card content controls and image action. */
+.card-options{display:flex;align-items:center;gap:16px;flex-wrap:wrap;border:0;border-bottom:1px solid var(--line);padding:0 0 12px;margin:0 0 12px;min-width:0}
+.card-options legend{float:left;color:var(--muted);font-size:11px;margin:0 16px 0 0;padding:0}
+.card-options label{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--ink);cursor:pointer}
+.card-options input{accent-color:var(--accent);margin:0}
+.element.unmatched{background:#e9edf0;border:1px solid #c8d0d6;color:#5f6d78}
+.element.unmatched strong{margin-top:0}
+.legend i{background:#e9edf0;border-color:#c8d0d6}
+.image-copy-button{background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:8px 12px;font-size:11px;white-space:nowrap}
+.image-copy-button:hover{border-color:#90aab7;background:#f7fafb}
+#image-status{color:var(--muted);font-size:10px;margin:4px 0 0;min-height:16px}
+@media(max-width:540px){.card-options{gap:8px}.card-options legend{float:none;width:100%;margin:0 0 2px}.card-options label{font-size:10px}.result-controls{flex-wrap:wrap;justify-content:flex-end}.image-copy-button{padding:8px 9px}}
