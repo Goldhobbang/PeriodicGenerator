@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#edf3f8">
+  <title>원소 문장 실험실 · Element lab</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="elements.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <header><a class="brand" href="./index.html"><span class="brand-mark">El<span>118</span></span> ELEMENT LAB<span class="brand-ko">원소 문장 실험실</span></a><span class="local-badge"><i></i> 브라우저 안의 작은 실험실</span></header>
+    <main>
+      <section class="intro">
+        <div><p class="eyebrow">WORDS MEET ELEMENTS</p><h1>당신의 문장,<br>어떤 <em>원소</em>로 이루어질까요?</h1><p class="intro-copy">평범한 영어가 주기율표를 만나면.<br>단어를 입력하고, 그 안에 숨어 있는 원소를 발견해 보세요.</p></div>
+        <div class="hero-elements" aria-label="Ba Co N, 베이컨을 만드는 세 원소"><div class="hero-tile mint"><small>56</small><strong>Ba</strong><span>바륨</span></div><div class="hero-tile blue"><small>27</small><strong>Co</strong><span>코발트</span></div><div class="hero-tile lilac"><small>7</small><strong>N</strong><span>질소</span></div><p>bacon → Ba + Co + N</p></div>
+      </section>
+      <section class="workspace" aria-label="원소 변환기">
+        <div class="input-section">
+          <div class="section-top"><label for="sentence"><span class="step">01</span> 영어 문장을 입력하세요</label><button id="clear" class="text-button" type="button">지우기</button></div>
+          <textarea id="sentence" maxlength="3000" spellcheck="false" placeholder="예: life is fun" aria-describedby="input-help">life is fun</textarea>
+          <div class="input-bottom"><span id="input-help">띄어쓰기와 줄바꿈은 그대로, 대소문자는 자유롭게.</span><span id="char-count">11 / 3,000</span></div>
+          <div class="examples"><span>이렇게 시작해 보세요</span><button type="button" data-example="bacon">bacon ↗</button><button type="button" data-example="think positive">think positive ↗</button><button type="button" data-example="you are special">you are special ↗</button></div>
+        </div>
+        <div class="output-section">
+          <div class="section-top output-top"><h2><span class="step">02</span> 원소로 다시 쓴 문장</h2><fieldset class="language"><legend class="sr-only">출력 언어</legend><label><input type="radio" name="language" value="en" checked><span>영어 기호</span></label><label><input type="radio" name="language" value="ko"><span>한국어 이름</span></label></fieldset></div>
+          <div id="cards" class="cards" aria-label="분리된 원소 카드"></div>
+          <div class="result-box"><div class="result-label">변환된 문자열</div><p id="result" tabindex="0"></p><button id="copy" class="copy-button" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4v12h4"/></svg><span>복사</span></button></div>
+          <div class="output-bottom"><p id="status" role="status" aria-live="polite"></p><span class="legend"><i></i> 원소로 바꿀 수 없는 글자는 그대로 표시해요</span></div><p id="copy-status" class="sr-only" role="status"></p>
+        </div>
+      </section>
+      <details class="explanation"><summary>문장은 어떻게 원소가 되나요?<span>+</span></summary><p>각 영어 단어를 1~2글자씩 나누어 118개 원소 기호와 비교합니다. 모든 분리 경로를 동적 계획법으로 비교해, 바꿀 수 없는 글자가 가장 적은 조합을 선택합니다. 조건이 같으면 원소 개수가 더 적은 조합을, 그것도 같으면 앞쪽의 두 글자 원소를 우선합니다.</p><p>예를 들어 <b>life → Li · Fe</b>가 됩니다. 공백·줄바꿈·문장부호는 유지하며, 원소 기호로 표현할 수 없는 글자는 주황색으로 표시합니다. 한국어 이름 사이에는 구분점(·)을 넣고, 복사에도 그대로 반영합니다.</p></details>
+    </main>
+    <footer><span>작은 단어에서 시작하는 원소 발견.</span><span>118 ELEMENTS · ENDLESS WORDS</span></footer>
+  </div>
+</body>
+</html>
