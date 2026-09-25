@@ -150,12 +150,58 @@ function segmentWord(word) {
   return tokens;
 }
 
-function convertText(text, language = 'en') {
+function formatCombination(tokens, language = 'en', separator = language === 'ko' ? '·' : '') {
+  return tokens.map((token, index) => {
+    const prefix = index && !token.literal && !tokens[index - 1].literal ? separator : '';
+    return prefix + (token.element ? (language === 'ko' ? token.element.name : token.element.symbol) : token.raw);
+  }).join('');
+}
+
+// Enumerate only paths with the fewest unmatched letters. The best path comes
+// first; the remaining paths are generated on demand, without recursion or an
+// exponential upfront list. Literal runs never join words across whitespace.
+function* combinationIterator(text) {
+  const edges = new Array(text.length);
+  const costs = new Array(text.length + 1);
+  costs[text.length] = { missing: 0, count: 0 };
+  for (let i = text.length - 1; i >= 0; i--) {
+    const candidates = [];
+    if (!/[A-Za-z]/.test(text[i])) {
+      candidates.push({ size: 1, token: { raw: text[i], literal: true }, ...costs[i + 1] });
+    } else {
+      for (const size of [2, 1]) {
+        const raw = text.slice(i, i + size);
+        const element = /^[A-Za-z]+$/.test(raw) ? ELEMENT_MAP.get(raw.toLowerCase()) : null;
+        if (i + size <= text.length && element) candidates.push({ size, token: { raw: text.slice(i, i + size), element }, missing: costs[i + size].missing, count: costs[i + size].count + 1 });
+      }
+      candidates.push({ size: 1, token: { raw: text[i], element: null }, missing: costs[i + 1].missing + 1, count: costs[i + 1].count });
+    }
+    candidates.sort((a, b) => a.missing - b.missing || a.count - b.count || b.size - a.size);
+    costs[i] = { missing: candidates[0].missing, count: candidates[0].count };
+    edges[i] = candidates.filter(candidate => candidate.missing === costs[i].missing);
+  }
+  const pending = [{ index: 0, path: null }];
+  while (pending.length) {
+    const { index, path } = pending.pop();
+    if (index === text.length) {
+      const tokens = [];
+      for (let node = path; node; node = node.previous) tokens.push(node.token);
+      yield tokens.reverse();
+      continue;
+    }
+    for (let j = edges[index].length - 1; j >= 0; j--) {
+      const edge = edges[index][j];
+      pending.push({ index: index + edge.size, path: { token: edge.token, previous: path } });
+    }
+  }
+}
+
+function convertText(text, language = 'en', separator = language === 'ko' ? '·' : '') {
   const parts = (text.match(/[A-Za-z]+|[^A-Za-z]+/g) || []).map(raw => {
     if (!/^[A-Za-z]/.test(raw)) return { raw, tokens: null, output: raw };
     const tokens = segmentWord(raw);
-    return { raw, tokens, output: tokens.map(token => token.element ? (language === 'ko' ? token.element.name : token.element.symbol) : token.raw).join(language === 'ko' ? '·' : '') };
+    return { raw, tokens, output: formatCombination(tokens, language, separator) };
   });
   return { parts, output: parts.map(part => part.output).join('') };
 }
-if (typeof module !== 'undefined' && module.exports) module.exports = { ELEMENTS, segmentWord, convertText };
+if (typeof module !== 'undefined' && module.exports) module.exports = { ELEMENTS, segmentWord, convertText, combinationIterator, formatCombination };
