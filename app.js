@@ -125,7 +125,7 @@ function resetCombinations() {
 input.addEventListener('input', resetCombinations);
 separator.addEventListener('input', () => { customSeparator = true; updateOutput(); });
 document.querySelectorAll('input[name="language"]').forEach(radio => radio.addEventListener('change', () => {
-  if (!customSeparator) separator.value = language() === 'ko' ? '·' : '';
+  if (!customSeparator) separator.value = ' ';
   const scrollTop = cards.scrollTop;
   cards.replaceChildren();
   combinations.forEach(appendCombination);
